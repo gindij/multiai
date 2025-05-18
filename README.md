@@ -26,11 +26,6 @@ A web application that compares responses from multiple AI models and provides t
 ### Installation
 
 1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/multi-ai.git
-cd multi-ai
-```
-
 2. Install dependencies:
 ```bash
 pip install -r requirements.txt
