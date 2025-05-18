@@ -19,9 +19,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const sunIcon = document.querySelector('.sun-icon');
     const moonIcon = document.querySelector('.moon-icon');
 
+    // Create enhanced table renderer
+    const renderer = new marked.Renderer();
+    
+    // Enhance table rendering
+    renderer.table = function(header, body) {
+        return '<div class="table-responsive"><table>\n'
+            + '<thead>\n'
+            + header
+            + '</thead>\n'
+            + '<tbody>\n'
+            + body
+            + '</tbody>\n'
+            + '</table></div>\n';
+    };
+    
     // Configure marked.js for markdown rendering
     marked.setOptions({
-        renderer: new marked.Renderer(),
+        renderer: renderer,
         highlight: function(code, lang) {
             const language = hljs.getLanguage(lang) ? lang : 'plaintext';
             return hljs.highlight(code, { language }).value;
@@ -205,11 +220,33 @@ document.addEventListener('DOMContentLoaded', function() {
     // Render markdown
     function renderMarkdown(content) {
         try {
-            return marked.parse(content);
+            // Parse markdown
+            const htmlContent = marked.parse(content);
+            
+            // Return the HTML content to be rendered first
+            // KaTeX will be applied after the HTML is in the DOM
+            return htmlContent;
         } catch (e) {
             console.error('Error parsing markdown:', e);
             return content;
         }
+    }
+    
+    // Render math expressions using KaTeX
+    function renderMathExpressions(element) {
+        if (!element) return;
+        
+        // Configure KaTeX auto-render
+        renderMathInElement(element, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false},
+                {left: '\\(', right: '\\)', display: false},
+                {left: '\\[', right: '\\]', display: true}
+            ],
+            throwOnError: false,
+            output: 'html'
+        });
     }
 
     // Display results
@@ -221,6 +258,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 bestResponseContent.querySelectorAll('pre code').forEach(block => {
                     hljs.highlightElement(block);
                 });
+                
+                // Render math expressions in the best response
+                renderMathExpressions(bestResponseContent);
     
                 // Get explanation element
                 const judgeExplanation = document.getElementById('judge-explanation');
@@ -386,6 +426,9 @@ document.addEventListener('DOMContentLoaded', function() {
             content.querySelectorAll('pre code').forEach(block => {
                 hljs.highlightElement(block);
             });
+            
+            // Apply math rendering to each response
+            renderMathExpressions(content);
 
             contentDiv.appendChild(content);
             card.appendChild(contentDiv);

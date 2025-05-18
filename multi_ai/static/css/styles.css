@@ -663,6 +663,59 @@ select {
     border-radius: 0;
 }
 
+/* Markdown table styling */
+.table-responsive {
+    overflow-x: auto;
+    margin: 1em 0;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.markdown-content table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.9em;
+    min-width: 400px; /* Ensure tables don't get too squished */
+}
+
+.markdown-content table th {
+    background-color: rgba(123, 111, 240, 0.1);
+    color: var(--text-color);
+    font-weight: bold;
+    text-align: left;
+    padding: 10px 15px;
+    border: 1px solid var(--border-color);
+}
+
+.markdown-content table td {
+    padding: 8px 15px;
+    border: 1px solid var(--border-color);
+    vertical-align: top;
+}
+
+.markdown-content table tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+body.dark-theme .markdown-content table th {
+    background-color: rgba(155, 140, 252, 0.15);
+}
+
+body.dark-theme .markdown-content table tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Math formatting */
+.katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.5em 0;
+}
+
+.katex {
+    font-size: 1.1em;
+}
+
 /* Syntax highlighting */
 .hljs-comment, .hljs-quote {
     color: var(--code-comment);
