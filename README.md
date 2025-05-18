@@ -1,127 +1,122 @@
-# Multi-AI
+# Multi-AI Comparison Tool
 
-A Python application that queries multiple LLM providers (OpenAI, Anthropic, Google Gemini) and uses a judge model to select the best response or blend multiple responses together.
+A web application that compares responses from multiple AI models and provides the best one. This tool supports:
+
+- **OpenAI** (GPT-4, GPT-4o, o3)
+- **Anthropic** (Claude 3 Opus, Claude 3 Sonnet, Claude 3 Haiku)
+- **Google Gemini** (Gemini Pro)
 
 ## Features
 
-- Query three different AI providers simultaneously:
-  - OpenAI (GPT models)
-  - Anthropic (Claude models)
-  - Google (Gemini models)
-- Uses a judge model to:
-  - Select the best response
-  - Or blend responses by weighting them
-- Web interface for easy interaction
-- Both CLI and API interfaces
-- Deployable locally or to a web server
+- Send a single prompt to multiple AI models
+- Get responses from all models
+- Select the best response using a judge model
+- Blend responses from multiple models for collaborative answers
+- Modern UI with responsive design and dark/light mode
+- Interactive model selection and response viewing
+- Markdown rendering with syntax highlighting
 
-## Installation
+## Getting Started
+
+### Prerequisites
+
+- Python 3.9 or higher
+- API keys for the AI providers you want to use
+
+### Installation
 
 1. Clone the repository:
-   ```
-   git clone [repo-url]
-   cd multi-ai
-   ```
+```bash
+git clone https://github.com/yourusername/multi-ai.git
+cd multi-ai
+```
 
-2. Create a virtual environment:
-   ```
-   python -m venv multiai_env
-   source multiai_env/bin/activate  # On Linux/Mac
-   multiai_env\Scripts\activate     # On Windows
-   ```
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-3. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
+3. Create a `.env` file in the project root:
+```bash
+cp .env.example .env
+```
 
-4. Set up API keys:
-   ```
-   python cli.py setup
-   ```
-   Then edit `.env` file with your API keys.
+4. Edit the `.env` file to add your API keys:
+```
+OPENAI_API_KEY=your_openai_key
+ANTHROPIC_API_KEY=your_anthropic_key
+GEMINI_API_KEY=your_gemini_key
+```
 
-## Usage
+### Running the Application
 
-### Web Interface
-
-Start the web server:
+Run the application with:
 
 ```bash
 python app.py
 ```
 
-Then open your browser to http://localhost:8000 to access the web interface.
+Then open your browser and navigate to `http://localhost:8000`.
 
-### CLI
+## Usage
 
-Compare responses from multiple AI providers:
+1. Enter your prompt in the text area
+2. Select the models you want to compare from each provider
+3. Toggle "Blend responses" if you want a combined answer
+4. Toggle "Show details" to see information about all responses
+5. Click "Compare AI Responses" to get results
+6. View the best response and all individual responses
 
+## Development
+
+### Setting Up Development Environment
+
+1. Install development dependencies:
 ```bash
-# Basic usage
-python cli.py compare "Write a short story about a robot that learns to cook"
-
-# Use specific models
-python cli.py compare --openai gpt-4 --anthropic claude-3-opus-20240229 "Write a poem about AI"
-
-# Blend responses instead of selecting one
-python cli.py compare --blend "Explain quantum computing to a 10-year-old"
-
-# Read prompt from file
-python cli.py compare --file prompt.txt
-
-# Save results to file
-python cli.py compare --output results.json "Create a marketing plan for a new product"
+pip install -r requirements-dev.txt
 ```
 
-List available models:
+### Running Tests
+
+Run the tests with:
 
 ```bash
-python cli.py models
+pytest
 ```
 
-### API Endpoints
-
-The API will be available at http://localhost:8000 when you run the app.
-
-- `GET /` - Web interface
-- `GET /models` - List available models
-- `POST /compare` - Compare responses from multiple models
-
-Example API request:
+Run with coverage:
 
 ```bash
-curl -X POST http://localhost:8000/compare \
-  -H "Content-Type: application/json" \
-  -d '{
-    "prompt": "Explain the theory of relativity",
-    "models": {
-      "openai": "gpt-4",
-      "anthropic": "claude-3-sonnet-20240229",
-      "gemini": "gemini-pro"
-    },
-    "blend": false,
-    "include_details": true
-  }'
+pytest --cov=multi_ai tests/
 ```
 
-## Configuration
+## Project Structure
 
-Edit the `multi_ai/config.py` file to modify:
-- Default models for each provider
-- Available models list
-- Timeout and retry settings
-
-## Deployment
-
-For web deployment, you can use services like:
-- Heroku
-- AWS Elastic Beanstalk
-- Google Cloud Run
-- Azure App Service
-
-The app is ready for deployment with minimal configuration changes.
+```
+multi_ai/
+├── __init__.py
+├── api.py             # FastAPI application
+├── cli.py             # Command-line interface
+├── config.py          # Configuration settings
+├── models/            # AI model interfaces
+│   ├── __init__.py
+│   ├── anthropic_model.py
+│   ├── base_model.py
+│   ├── gemini_model.py
+│   └── openai_model.py
+├── services/          # Business logic
+│   ├── __init__.py
+│   ├── comparator.py
+│   └── judge.py
+├── static/            # Static assets
+│   ├── css/
+│   └── js/
+├── templates/         # HTML templates
+└── utils/             # Utility functions
+    ├── __init__.py
+    └── helpers.py
+```
 
 ## License
 
-MIT
+This project is licensed under the MIT License - see the LICENSE file for details.
