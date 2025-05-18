@@ -25,10 +25,10 @@ def pytest_configure(config):
 def setup_test_environment():
     """
     Set up environment variables for testing.
-    
+
     This fixture runs automatically for all tests and manages API keys
     by setting test values before tests and restoring original values afterward.
-    
+
     The keys set are:
     - OPENAI_API_KEY
     - ANTHROPIC_API_KEY
@@ -38,14 +38,14 @@ def setup_test_environment():
     env_backup = {}
     for key in ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY"]:
         env_backup[key] = os.environ.get(key)
-    
+
     # Set dummy API keys for testing - these will be used by model classes
     os.environ["OPENAI_API_KEY"] = "test-openai-key"
-    os.environ["ANTHROPIC_API_KEY"] = "test-anthropic-key" 
+    os.environ["ANTHROPIC_API_KEY"] = "test-anthropic-key"
     os.environ["GEMINI_API_KEY"] = "test-gemini-key"
-    
+
     yield
-    
+
     # Restore original environment variables to avoid affecting other tests
     for key, val in env_backup.items():
         if val is None:
@@ -59,7 +59,7 @@ def setup_test_environment():
 def openai_response() -> Dict[str, Any]:
     """
     Sample OpenAI model response.
-    
+
     Returns a dictionary containing a successful response from an OpenAI model,
     formatted according to the application's expected response structure.
     Used for testing response handling without calling the actual API.
@@ -68,7 +68,7 @@ def openai_response() -> Dict[str, Any]:
         "provider": "OpenAI",
         "model": "gpt-4",
         "response": "This is a test response from OpenAI.",
-        "success": True
+        "success": True,
     }
 
 
@@ -76,7 +76,7 @@ def openai_response() -> Dict[str, Any]:
 def anthropic_response() -> Dict[str, Any]:
     """
     Sample Anthropic model response.
-    
+
     Returns a dictionary containing a successful response from an Anthropic model,
     formatted according to the application's expected response structure.
     Used for testing response handling without calling the actual API.
@@ -85,7 +85,7 @@ def anthropic_response() -> Dict[str, Any]:
         "provider": "Anthropic",
         "model": "claude-3-opus",
         "response": "This is a test response from Anthropic.",
-        "success": True
+        "success": True,
     }
 
 
@@ -93,7 +93,7 @@ def anthropic_response() -> Dict[str, Any]:
 def gemini_response() -> Dict[str, Any]:
     """
     Sample Gemini model response.
-    
+
     Returns a dictionary containing a successful response from a Google Gemini model,
     formatted according to the application's expected response structure.
     Used for testing response handling without calling the actual API.
@@ -102,7 +102,7 @@ def gemini_response() -> Dict[str, Any]:
         "provider": "Google Gemini",
         "model": "gemini-pro",
         "response": "This is a test response from Google Gemini.",
-        "success": True
+        "success": True,
     }
 
 
@@ -110,7 +110,7 @@ def gemini_response() -> Dict[str, Any]:
 def failed_response() -> Dict[str, Any]:
     """
     Sample failed model response.
-    
+
     Returns a dictionary representing a failed API call to a model,
     with appropriate error message and success=False flag.
     Used for testing error handling without triggering actual API errors.
@@ -119,7 +119,7 @@ def failed_response() -> Dict[str, Any]:
         "provider": "OpenAI",
         "model": "gpt-4",
         "error": "API error: rate limit exceeded",
-        "success": False
+        "success": False,
     }
 
 
@@ -127,11 +127,11 @@ def failed_response() -> Dict[str, Any]:
 def comparison_result() -> Dict[str, Any]:
     """
     Sample comparison result from the Comparator service.
-    
+
     Returns a dictionary representing the result of comparing multiple model responses,
     where a single best response was selected (not blended).
-    
-    This fixture is useful for testing downstream components that process the 
+
+    This fixture is useful for testing downstream components that process the
     Comparator's output without needing to run the actual comparison logic.
     """
     return {
@@ -140,12 +140,12 @@ def comparison_result() -> Dict[str, Any]:
             "provider": "OpenAI",
             "model": "gpt-4",
             "response": "This is a test response from OpenAI.",
-            "success": True
+            "success": True,
         },
         "method": "select",  # Indicates a single response was selected (not blended)
         "reason": "Selected response 1",
         "judge_response": "1",  # Raw judge output (selected first response)
-        "success": True
+        "success": True,
     }
 
 
@@ -153,16 +153,16 @@ def comparison_result() -> Dict[str, Any]:
 def blended_result() -> Dict[str, Any]:
     """
     Sample blended result from the Comparator service.
-    
+
     Returns a dictionary representing the result of comparing multiple model responses,
     where responses were weighted and blended into a single response.
-    
+
     Features:
     - Contains the blended response text in 'result'
     - Includes weights assigned to each model response
     - Contains the original responses that were blended
     - Has metadata about the blending process
-    
+
     This fixture is useful for testing downstream components that process the
     Comparator's output in blending mode without running the actual comparison logic.
     """
@@ -174,24 +174,24 @@ def blended_result() -> Dict[str, Any]:
                 "provider": "OpenAI",
                 "model": "gpt-4",
                 "response": "This is a test response from OpenAI.",
-                "success": True
+                "success": True,
             },
             {
                 "provider": "Anthropic",
                 "model": "claude-3-opus",
                 "response": "This is a test response from Anthropic.",
-                "success": True
+                "success": True,
             },
             {
                 "provider": "Google Gemini",
                 "model": "gemini-pro",
                 "response": "This is a test response from Google Gemini.",
-                "success": True
-            }
+                "success": True,
+            },
         ],
         "method": "blend",  # Indicates responses were blended together
         "judge_response": '{"weights": [6, 3, 1]}',  # Raw judge output with weights
-        "success": True
+        "success": True,
     }
 
 
@@ -199,7 +199,7 @@ def blended_result() -> Dict[str, Any]:
 def mock_model_instance():
     """
     Creates a mock model instance that can be used for testing.
-    
+
     This mock has standard methods implemented with AsyncMock to allow
     tests to verify calls and provide custom return values without
     requiring real API calls.
@@ -210,7 +210,7 @@ def mock_model_instance():
         "provider": "TestProvider",
         "model": "test-model",
         "response": "This is a test response",
-        "success": True
+        "success": True,
     }
     return mock
 
@@ -219,7 +219,7 @@ def mock_model_instance():
 def sample_responses():
     """
     A list of sample responses from different AI providers.
-    
+
     Used to test functionality that needs to handle multiple model responses,
     such as the Judge and Comparator services.
     """
@@ -228,18 +228,18 @@ def sample_responses():
             "provider": "OpenAI",
             "model": "gpt-4",
             "response": "Response from OpenAI model",
-            "success": True
+            "success": True,
         },
         {
             "provider": "Anthropic",
             "model": "claude-3-opus",
             "response": "Response from Anthropic model",
-            "success": True
+            "success": True,
         },
         {
             "provider": "Google Gemini",
             "model": "gemini-pro",
             "response": "Response from Google Gemini model",
-            "success": True
-        }
+            "success": True,
+        },
     ]

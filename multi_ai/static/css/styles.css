@@ -169,6 +169,19 @@ body.dark-theme .best-response {
     border-color: #464f65 !important;
 }
 
+body.dark-theme .judge-explanation {
+    background-color: #2a303f !important;
+    border-left-color: #9b8cfc !important;
+}
+
+body.dark-theme .judge-explanation p {
+    color: #a9b6cc !important;
+}
+
+body.dark-theme .weight-indicator {
+    background-color: #323846 !important;
+}
+
 /* Dark mode form elements */
 body.dark-theme textarea,
 body.dark-theme select,
@@ -458,6 +471,39 @@ select {
     margin-bottom: var(--space-md);
     color: var(--primary-color);
     font-size: 0.875rem;
+}
+
+.judge-explanation {
+    background-color: var(--bg-color);
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-md);
+    border-left: 3px solid var(--primary-color);
+    font-size: 0.95rem;
+    display: block; /* Ensure it's always visible when content exists */
+}
+
+.judge-explanation p {
+    margin: 0 0 var(--space-sm) 0;
+    color: var(--text-light);
+}
+
+.weight-breakdown {
+    margin-top: var(--space-sm);
+    padding-top: var(--space-sm);
+    border-top: 1px dashed var(--border-color);
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.weight-indicator {
+    display: inline-block;
+    margin-right: var(--space-sm);
+    margin-bottom: var(--space-xs);
+    background-color: var(--bg-color);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
 }
 
 .response-content {

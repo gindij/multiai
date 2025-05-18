@@ -46,9 +46,17 @@ class CompareRequest(BaseModel):
 class CompareResponse(BaseModel):
     result: str = Field(..., description="The selected or blended response")
     success: bool = Field(..., description="Whether the comparison was successful")
+    explanation: Optional[str] = Field(
+        None, description="Explanation of the judge's decision or blending process"
+    )
     details: Optional[Dict[str, Any]] = Field(
         None, description="Optional detailed evaluation information"
     )
+
+    # Allow additional fields to be included in the response
+    class Config:
+        # Allow extra fields that aren't in the schema
+        extra = "allow"
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -72,11 +80,21 @@ async def compare_models(request: CompareRequest = Body(...)):
     try:
         # Select the appropriate comparator based on blend option
         selected_comparator = blending_comparator if request.blend else comparator
+
         # Execute the comparison
         result = await selected_comparator.compare(request.prompt, request.models)
 
         # Format the response
         formatted = format_response(result, request.include_details)
+
+        # Ensure explanation is at top level if it exists in the original result
+        if (
+            request.include_details
+            and "explanation" in result
+            and "explanation" not in formatted
+        ):
+            formatted["explanation"] = result.get("explanation")
+
         return formatted
 
     except Exception as e:

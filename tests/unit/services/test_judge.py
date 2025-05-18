@@ -106,8 +106,9 @@ class TestJudge:
         assert "Response 1: OpenAI (gpt-4)" in prompt
         assert "Response 2: Anthropic (claude-3-opus)" in prompt
         assert "Response 3: Google Gemini (gemini-pro)" in prompt
+        assert "Provide a brief explanation" in prompt
         assert "Identify the number of the best response" in prompt
-        assert "Reply with only the number" in prompt
+        assert '{"explanation": "Your explanation here", "selection": N}' in prompt
 
     def test_create_evaluation_prompt_blend_mode(self, judge, sample_responses):
         """Test creating evaluation prompt in blending mode."""
@@ -121,46 +122,91 @@ class TestJudge:
         assert "Response 1: OpenAI (gpt-4)" in prompt
         assert "Response 2: Anthropic (claude-3-opus)" in prompt
         assert "Response 3: Google Gemini (gemini-pro)" in prompt
+        assert "Provide a brief explanation" in prompt
         assert "Assign a weight between 0 and 10" in prompt
-        assert 'Reply using only this JSON format: {"weights": [X, Y, Z]}' in prompt
+        assert (
+            '{"explanation": "Your explanation here", "weights": [X, Y, Z]}' in prompt
+        )
 
     def test_parse_selected_index(self, judge):
         """Test parsing the selected index from judge responses."""
         # Test direct number
-        assert judge._parse_selected_index("2") == 1  # Zero-indexed
+        index, explanation = judge._parse_selected_index("2")
+        assert index == 1  # Zero-indexed
+        assert (
+            explanation == "Selected based on overall quality assessment."
+        )  # Default explanation
 
         # Test with surrounding text
-        assert (
-            judge._parse_selected_index("The best response is 3.") == 2
-        )  # Zero-indexed
+        index, explanation = judge._parse_selected_index("The best response is 3.")
+        assert index == 2  # Zero-indexed
+        assert explanation == "Selected based on overall quality assessment."
 
         # Test with quotes
-        assert judge._parse_selected_index("'1'") == 0  # Zero-indexed
+        index, explanation = judge._parse_selected_index("'1'")
+        assert index == 0  # Zero-indexed
+        assert explanation == "Selected based on overall quality assessment."
+
+        # Test with JSON format containing explanation
+        index, explanation = judge._parse_selected_index(
+            '{"selection": 2, "explanation": "Response 2 is more detailed and accurate"}'
+        )
+        assert index == 1  # Zero-indexed
+        assert explanation == "Response 2 is more detailed and accurate"
 
         # Test invalid input
-        assert judge._parse_selected_index("None of them are good") is None
+        index, explanation = judge._parse_selected_index("None of them are good")
+        assert index is None
+        assert (
+            explanation == "Selected based on overall quality assessment."
+        )  # Default explanation
 
     def test_parse_weights(self, judge):
         """Test parsing weights from judge responses."""
-        # Test valid JSON
+        # Test valid JSON without explanation
         valid_json = '{"weights": [8, 5, 2]}'
-        assert judge._parse_weights(valid_json, 3) == [8, 5, 2]
+        weights, explanation = judge._parse_weights(valid_json, 3)
+        assert weights == [8, 5, 2]
+        assert (
+            explanation
+            == "Weights assigned based on quality assessment across multiple criteria."
+        )  # Default explanation
+
+        # Test JSON with explanation
+        json_with_explanation = '{"weights": [8, 5, 2], "explanation": "OpenAI response was more accurate and comprehensive"}'
+        weights, explanation = judge._parse_weights(json_with_explanation, 3)
+        assert weights == [8, 5, 2]
+        assert explanation == "OpenAI response was more accurate and comprehensive"
 
         # Test JSON with surrounding text
         text_with_json = 'Here are my weights: {"weights": [9, 4, 7]}'
-        assert judge._parse_weights(text_with_json, 3) == [9, 4, 7]
+        weights, explanation = judge._parse_weights(text_with_json, 3)
+        assert weights == [9, 4, 7]
+        assert (
+            explanation
+            == "Weights assigned based on quality assessment across multiple criteria."
+        )
 
         # Test plain numbers
         plain_numbers = "7 6 3"
-        assert judge._parse_weights(plain_numbers, 3) == [7.0, 6.0, 3.0]
+        weights, explanation = judge._parse_weights(plain_numbers, 3)
+        assert weights == [7.0, 6.0, 3.0]
+        assert (
+            explanation
+            == "Weights assigned based on quality assessment across multiple criteria."
+        )
 
         # Test invalid input - fallback to equal weights
         invalid_input = "I can't decide"
         expected_equal_weights = [1 / 3, 1 / 3, 1 / 3]
-        result = judge._parse_weights(invalid_input, 3)
-        assert len(result) == 3
+        weights, explanation = judge._parse_weights(invalid_input, 3)
+        assert len(weights) == 3
         assert all(
-            abs(w - expected_equal_weights[i]) < 0.01 for i, w in enumerate(result)
+            abs(w - expected_equal_weights[i]) < 0.01 for i, w in enumerate(weights)
+        )
+        assert (
+            explanation
+            == "Weights assigned based on quality assessment across multiple criteria."
         )
 
     @pytest.mark.asyncio
@@ -184,6 +230,11 @@ class TestJudge:
         assert result["result"] == "Single response"
         assert result["method"] == "single"
         assert result["success"] is True
+        assert "explanation" in result
+        assert (
+            result["explanation"]
+            == "Only one successful response was available, so it was selected automatically."
+        )
 
     @pytest.mark.asyncio
     async def test_evaluate_selection_mode(
@@ -191,43 +242,45 @@ class TestJudge:
     ):
         """
         Test evaluation in selection mode.
-        
+
         This test verifies that the Judge can properly:
         1. Anonymize responses to prevent bias
         2. Send them to a judge model for evaluation
         3. Parse the response to select the best response
         4. Return the selected response with appropriate metadata
-        
+
         Since the anonymization process includes randomization, this test mocks
         the anonymization process to make it deterministic for testing.
         """
-        
+
         # Mock _anonymize_responses to get predictable results
         original_anonymize = judge._anonymize_responses
-        
+
         # Create a fake anonymization that preserves order
         def fake_anonymize(responses):
             anonymized = []
             provider_map = {}
-            
+
             for i, resp in enumerate(responses):
-                anonymized.append({
-                    "provider": f"Provider {i+1}",
-                    "model": f"Model {i+1}",
-                    "response": resp["response"],
-                    "success": resp["success"]
-                })
+                anonymized.append(
+                    {
+                        "provider": f"Provider {i+1}",
+                        "model": f"Model {i+1}",
+                        "response": resp["response"],
+                        "success": resp["success"],
+                    }
+                )
                 provider_map[i] = (i, resp["provider"], resp["model"])
-                
+
             return anonymized, provider_map
-            
+
         # Patch the method and execute within the context
-        with patch.object(judge, '_anonymize_responses', side_effect=fake_anonymize):
-            # Setup judge to always select the OpenAI response (index 0)
+        with patch.object(judge, "_anonymize_responses", side_effect=fake_anonymize):
+            # Setup judge to always select the OpenAI response (index 0) with explanation
             mock_openai_model.query.return_value = {
                 "provider": "OpenAI",
                 "model": "gpt-4-turbo",
-                "response": "1",  # Select first response (Provider 1)
+                "response": '{"selection": 1, "explanation": "Response 1 is more accurate and detailed"}',  # Select first response with explanation
                 "success": True,
             }
 
@@ -246,6 +299,8 @@ class TestJudge:
         assert result["best_response"]["provider"] == "OpenAI"
         assert result["method"] == "select"
         assert result["success"] is True
+        assert "explanation" in result
+        assert result["explanation"] == "Response 1 is more accurate and detailed"
 
     @pytest.mark.asyncio
     async def test_evaluate_selection_judge_failed(
@@ -267,6 +322,11 @@ class TestJudge:
         assert result["best_response"]["provider"] == "OpenAI"
         assert result["method"] == "fallback"
         assert result["success"] is True
+        assert "explanation" in result
+        assert (
+            result["explanation"]
+            == "The judge model encountered an error. Defaulting to the first available response."
+        )
 
     @pytest.mark.asyncio
     async def test_evaluate_blend_mode(
@@ -276,11 +336,11 @@ class TestJudge:
         # Switch to blend mode
         judge.blend_responses = True
 
-        # Setup judge response with weights
+        # Setup judge response with weights and explanation
         mock_openai_model.query.return_value = {
             "provider": "OpenAI",
             "model": "gpt-4-turbo",
-            "response": '{"weights": [7, 5, 3]}',
+            "response": '{"weights": [7, 5, 3], "explanation": "OpenAI provided the most accurate information, Anthropic had good structure, and Gemini had unique insights"}',
             "success": True,
         }
 
@@ -290,7 +350,7 @@ class TestJudge:
             {
                 "provider": "OpenAI",
                 "model": "gpt-4-turbo",
-                "response": '{"weights": [7, 5, 3]}',
+                "response": '{"weights": [7, 5, 3], "explanation": "OpenAI provided the most accurate information, Anthropic had good structure, and Gemini had unique insights"}',
                 "success": True,
             },
             # Second call for blending
@@ -313,3 +373,8 @@ class TestJudge:
         assert len(result["weights"]) == 3
         assert result["method"] == "blend"
         assert result["success"] is True
+        assert "explanation" in result
+        assert (
+            result["explanation"]
+            == "OpenAI provided the most accurate information, Anthropic had good structure, and Gemini had unique insights"
+        )
