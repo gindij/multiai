@@ -180,6 +180,11 @@ body.dark-theme .judge-explanation p {
 
 body.dark-theme .weight-indicator {
     background-color: #323846 !important;
+    border-color: #464f65 !important;
+}
+
+body.dark-theme .collapsible-card .card-header:hover {
+    background-color: rgba(155, 140, 252, 0.1) !important;
 }
 
 /* Dark mode form elements */
@@ -481,6 +486,7 @@ select {
     border-left: 3px solid var(--primary-color);
     font-size: 0.95rem;
     display: block; /* Ensure it's always visible when content exists */
+    box-shadow: var(--shadow-sm);
 }
 
 .judge-explanation p {
@@ -500,17 +506,34 @@ select {
     display: inline-block;
     margin-right: var(--space-sm);
     margin-bottom: var(--space-xs);
-    background-color: var(--bg-color);
-    padding: 2px 8px;
+    background-color: var(--card-bg);
+    padding: 4px 10px;
     border-radius: var(--radius-sm);
     font-size: 0.85rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
 }
 
 .response-content {
     background-color: var(--code-bg);
-    padding: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
     border-radius: var(--radius-md);
     overflow: auto;
+}
+
+/* Fix for numbered lists and bullet points */
+.markdown-content ul,
+.markdown-content ol {
+    padding-left: 2em;
+    margin-bottom: 1em;
+}
+
+.markdown-content li {
+    margin-bottom: 0.5em;
+}
+
+.markdown-content p {
+    margin-bottom: 1em;
 }
 
 /* Response cards */
@@ -521,10 +544,17 @@ select {
 }
 
 .response-card {
-    background-color: var(--code-bg);
+    background-color: var(--card-bg);
     border-radius: var(--radius-md);
     padding: var(--space-md);
     border-left: 3px solid var(--primary-color);
+    transition: all var(--transition);
+    box-shadow: var(--shadow-sm);
+}
+
+.response-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
 }
 
 .response-card h4 {
@@ -546,6 +576,60 @@ select {
     overflow-y: auto;
 }
 
+/* Collapsible cards for blend mode */
+.collapsible-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: var(--space-sm);
+    border-radius: var(--radius-md);
+    transition: background-color var(--transition);
+}
+
+.collapsible-card .card-header:hover {
+    background-color: rgba(123, 111, 240, 0.05);
+}
+
+.collapsible-card .card-header h4 {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.collapsible-card .toggle-icon {
+    transition: transform var(--transition);
+    font-size: 1.2rem;
+    opacity: 0.8;
+    margin-left: var(--space-sm);
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.collapsible-card.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.collapsible-card .card-content {
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.2s ease, margin 0.2s ease, padding 0.2s ease, border 0.2s ease;
+    max-height: 500px;
+    opacity: 1;
+    margin-top: var(--space-sm);
+    padding-top: var(--space-sm);
+    border-top: 1px solid var(--border-color);
+}
+
+.collapsible-card.collapsed .card-content {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+    pointer-events: none;
+}
+
 /* Markdown styling */
 .markdown-content h1, 
 .markdown-content h2, 
@@ -553,10 +637,6 @@ select {
     margin-top: 1.5em;
     margin-bottom: 0.5em;
     color: var(--text-color);
-}
-
-.markdown-content p {
-    margin-bottom: 1em;
 }
 
 .markdown-content pre {

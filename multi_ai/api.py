@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException, Body, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, Dict, List, Any
 
 from .services.comparator import Comparator
@@ -54,9 +54,7 @@ class CompareResponse(BaseModel):
     )
 
     # Allow additional fields to be included in the response
-    class Config:
-        # Allow extra fields that aren't in the schema
-        extra = "allow"
+    model_config = ConfigDict(extra="allow")
 
 
 @app.get("/", response_class=HTMLResponse)

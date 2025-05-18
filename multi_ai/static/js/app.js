@@ -214,7 +214,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Display results
     function displayResults(data) {
-        if (data.success && data.result) {
+        try {
+            if (data.success && data.result) {
                 // Render and highlight best response
                 bestResponseContent.innerHTML = renderMarkdown(data.result);
                 bestResponseContent.querySelectorAll('pre code').forEach(block => {
@@ -284,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Display all responses if available
                     if (data.details.all_responses || data.details.responses) {
                         const responses = data.details.all_responses || data.details.responses;
-                        displayAllResponses(responses, data.details.weights);
+                        displayAllResponses(responses, data.details.weights, data.details.method === 'blend');
                     } else {
                         allResponsesContainer.style.display = 'none';
                     }
@@ -320,29 +321,33 @@ document.addEventListener('DOMContentLoaded', function() {
             return `<span class="weight-indicator">${response.provider} (${response.model}): <strong>${percentage}%</strong></span>`;
         });
 
-        // Join with commas and 'and' for the last item
-        let weightText;
-        if (weightStrings.length === 2) {
-            weightText = weightStrings.join(' and ');
-        } else if (weightStrings.length > 2) {
-            const lastItem = weightStrings.pop();
-            weightText = weightStrings.join(', ') + ', and ' + lastItem;
-        } else {
-            weightText = weightStrings[0];
-        }
-
+        // Create a neat layout for weights
+        const weightText = weightStrings.join(' ');
+        
         return `<div class="weight-breakdown">Weight distribution: ${weightText}</div>`;
     }
 
     // Display all responses
-    function displayAllResponses(responses, weights) {
+    function displayAllResponses(responses, weights, isBlendMode) {
         allResponsesContainer.style.display = 'block';
         allResponses.innerHTML = '';
 
         responses.forEach((response, index) => {
+            // Create card with collapsible functionality if in blend mode
             const card = document.createElement('div');
-            card.className = 'response-card';
+            
+            // Add appropriate classes based on mode
+            if (isBlendMode) {
+                // Set cards to be collapsed by default
+                card.className = 'response-card collapsible-card collapsed';
+            } else {
+                card.className = 'response-card';
+            }
 
+            // Create header that will act as toggle in blend mode
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'card-header';
+            
             const header = document.createElement('h4');
             header.textContent = `${response.provider} (${response.model})`;
 
@@ -353,7 +358,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 weightSpan.textContent = `Weight: ${Math.round(weights[index] * 100)}%`;
                 header.appendChild(weightSpan);
             }
+            
+            headerDiv.appendChild(header);
+            
+            // Add toggle icon if in blend mode
+            if (isBlendMode) {
+                const toggleIcon = document.createElement('span');
+                toggleIcon.className = 'toggle-icon';
+                toggleIcon.innerHTML = '▶';
+                headerDiv.appendChild(toggleIcon);
+                
+                // We'll use the global event listener instead
+                // No need for an inline event handler here
+            }
+            
+            card.appendChild(headerDiv);
 
+            // Create content container
+            const contentDiv = document.createElement('div');
+            contentDiv.className = isBlendMode ? 'card-content' : '';
+            
             const content = document.createElement('div');
             content.className = 'response-card-content markdown-content';
             content.innerHTML = renderMarkdown(response.response);
@@ -363,11 +387,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 hljs.highlightElement(block);
             });
 
-            card.appendChild(header);
-            card.appendChild(content);
+            contentDiv.appendChild(content);
+            card.appendChild(contentDiv);
             allResponses.appendChild(card);
         });
     }
+
+    // Handle clicks on collapsible cards
+    document.addEventListener('click', function(e) {
+        // Find if click was on or inside a card header
+        const headerElement = e.target.closest('.card-header');
+        if (headerElement) {
+            // Get the parent card element
+            const card = headerElement.closest('.collapsible-card');
+            if (card) {
+                card.classList.toggle('collapsed');
+                
+                // Find and update the toggle icon
+                const toggleIcon = headerElement.querySelector('.toggle-icon');
+                if (toggleIcon) {
+                    toggleIcon.innerHTML = card.classList.contains('collapsed') ? '▶' : '▼';
+                }
+            }
+        }
+    });
 
     // Notification system
     function showNotification(message, type = 'info') {
