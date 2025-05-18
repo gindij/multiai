@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-AI Comparison</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="/static/css/styles.css?v=2024051806">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Multi-AI Comparison</h1>
+            <p>Compare responses from multiple AI models and get the best one</p>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark/light mode" title="Toggle dark/light mode">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f0b429" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sun-icon">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4a5568" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="moon-icon" style="display: none;">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
+        </header>
+
+        <main>
+            <div class="prompt-container">
+                <textarea id="prompt-input" placeholder="Enter your prompt here..."></textarea>
+                <div class="controls">
+                    <div class="settings">
+                        <label class="toggle">
+                            <input type="checkbox" id="blend-toggle">
+                            <span class="slider"></span>
+                            <span class="label">Blend responses</span>
+                        </label>
+                        <label class="toggle">
+                            <input type="checkbox" id="details-toggle" checked>
+                            <span class="slider"></span>
+                            <span class="label">Show details</span>
+                        </label>
+                    </div>
+                    <button id="submit-btn">Compare AI Responses</button>
+                </div>
+            </div>
+
+            <div class="model-selection">
+                <h3>Models to Compare</h3>
+                <div class="model-toggles">
+                    <div class="model-group">
+                        <h4>OpenAI</h4>
+                        <select id="openai-model"></select>
+                    </div>
+                    <div class="model-group">
+                        <h4>Anthropic</h4>
+                        <select id="anthropic-model"></select>
+                    </div>
+                    <div class="model-group">
+                        <h4>Google Gemini</h4>
+                        <select id="gemini-model"></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-container hidden" id="results-container">
+                <div class="loading-spinner" id="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Comparing responses...</p>
+                </div>
+                
+                <div class="results" id="results">
+                    <div class="best-response">
+                        <h3>Best Response</h3>
+                        <div class="response-meta">
+                            <span id="best-model">Model: </span>
+                            <span id="best-method">Method: </span>
+                        </div>
+                        <div class="response-content markdown-content" id="best-response-content"></div>
+                    </div>
+                    
+                    <div class="all-responses" id="all-responses-container">
+                        <h3>All Responses</h3>
+                        <div class="responses-grid" id="all-responses"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Multi-AI Comparison Tool</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/app.js?v=2024051805"></script>
+</body>
+</html>
